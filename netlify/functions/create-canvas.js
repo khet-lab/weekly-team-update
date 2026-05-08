@@ -4,8 +4,20 @@ exports.handler = async function(event) {
     'Content-Type': 'application/json'
   };
 
-  const token = process.env.SLACK_BOT_TOKEN;
-  if (!token) return { statusCode: 500, headers, body: JSON.stringify({ error: 'No token' }) };
+  const token       = process.env.SLACK_BOT_TOKEN;
+  const netlifyToken = process.env.NETLIFY_API_TOKEN;
+  const siteId      = process.env.NETLIFY_SITE_ID;
+
+  if (!token)        return { statusCode: 500, headers, body: JSON.stringify({ error: 'No Slack token' }) };
+  if (!netlifyToken) return { statusCode: 500, headers, body: JSON.stringify({ error: 'No Netlify token' }) };
+  if (!siteId)       return { statusCode: 500, headers, body: JSON.stringify({ error: 'No site ID' }) };
+
+  // Get Monday's date for the canvas title
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+  const weekLabel = monday.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const content = `## Meeting purpose
 
@@ -222,27 +234,64 @@ exports.handler = async function(event) {
 
 ---
 
-## 6. Sessions & milestones — next 2 weeks
-
-- **Strategy Working Session — 11 May — 2PM SAT**
-- **Strategy Working Session — 18 May — 2PM SAT**
-- **Strategy Forum — 25 May — 2PM SAT**`;
+## 6. Sessions & milestones — next 2 weeks`;
 
   try {
-    const res = await fetch('https://slack.com/api/canvases.create', {
+    // Step 1: Create the canvas
+    const canvasRes  = await fetch('https://slack.com/api/canvases.create', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: 'Weekly — 11 May 2026', document_content: { type: 'markdown', markdown: content } })
+      body: JSON.stringify({
+        title: `Weekly — ${weekLabel}`,
+        document_content: { type: 'markdown', markdown: content }
+      })
     });
+    const canvasData = await canvasRes.json();
+    console.log('CANVAS CREATE:', JSON.stringify(canvasData));
 
-    const data = await res.json();
-    console.log('CREATE CANVAS:', JSON.stringify(data));
+    if (!canvasData.ok) return { statusCode: 500, headers, body: JSON.stringify({ error: canvasData.error }) };
 
-    if (!data.ok) return { statusCode: 500, headers, body: JSON.stringify({ error: data.error, detail: data }) };
+    const newCanvasId = canvasData.canvas_id;
 
-    return { statusCode: 200, headers, body: JSON.stringify({ ok: true, canvas_id: data.canvas_id }) };
+    // Step 2: Update SLACK_CANVAS_ID env var in Netlify
+    const envRes  = await fetch(`https://api.netlify.com/api/v1/sites/${siteId}/env/SLACK_CANVAS_ID`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${netlifyToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        value: newCanvasId
+      })
+    });
+    const envData = await envRes.json();
+    console.log('ENV UPDATE:', JSON.stringify(envData));
+
+    // Step 3: Trigger a redeploy so functions pick up the new env var
+    const deployRes  = await fetch(`https://api.netlify.com/api/v1/sites/${siteId}/builds`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${netlifyToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ clear_cache: false })
+    });
+    const deployData = await deployRes.json();
+    console.log('DEPLOY:', JSON.stringify(deployData));
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        ok: true,
+        canvas_id: newCanvasId,
+        canvas_url: `https://yocoteam.slack.com/docs/T03KW8758/${newCanvasId}`,
+        week: weekLabel
+      })
+    };
 
   } catch(err) {
+    console.log('ERROR:', err.message);
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
 };
