@@ -33,15 +33,24 @@ exports.handler = async function(event) {
 
     const newCanvasId = canvasData.canvas_id;
 
-    // Step 2: Update env var via Netlify API
-    const envRes  = await fetch(`https://api.netlify.com/api/v1/sites/${siteId}/env/SLACK_CANVAS_ID`, {
+    // Step 2: Get account info first
+    const accountRes  = await fetch('https://api.netlify.com/api/v1/sites/' + siteId, {
+      headers: { 'Authorization': `Bearer ${netlifyToken}` }
+    });
+    const accountData = await accountRes.json();
+    console.log('SITE DATA:', JSON.stringify(accountData).slice(0, 500));
+
+    const accountSlug = accountData.account_slug;
+
+    // Step 3: Update env var using account slug
+    const envRes  = await fetch(`https://api.netlify.com/api/v1/accounts/${accountSlug}/env/SLACK_CANVAS_ID`, {
       method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${netlifyToken}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        value: newCanvasId
+        values: [{ context: 'all', value: newCanvasId }]
       })
     });
     const envText = await envRes.text();
@@ -55,6 +64,7 @@ exports.handler = async function(event) {
         canvas_id: newCanvasId,
         canvas_url: `https://yocoteam.slack.com/docs/T03KW8758/${newCanvasId}`,
         week: weekLabel,
+        account_slug: accountSlug,
         env_status: envRes.status,
         env_response: envText
       })
