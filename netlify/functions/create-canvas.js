@@ -267,18 +267,6 @@ exports.handler = async function(event) {
     const envData = await envRes.json();
     console.log('ENV UPDATE:', JSON.stringify(envData));
 
-    // Step 3: Trigger a redeploy so functions pick up the new env var
-    const deployRes  = await fetch(`https://api.netlify.com/api/v1/sites/${siteId}/builds`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${netlifyToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ clear_cache: false })
-    });
-    const deployData = await deployRes.json();
-    console.log('DEPLOY:', JSON.stringify(deployData));
-
     return {
       statusCode: 200,
       headers,
