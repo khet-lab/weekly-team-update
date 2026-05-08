@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Update</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --border: #E5E0D8;
+    --border-strong: #C8C0B4;
+    --text: #1A1814;
+    --text-secondary: #6B6560;
+    --text-tertiary: #9E9890;
+    --prefill: #F0ECE4;
+    --prefill-text: #5A5550;
+    --accent-strategy: #2D4A3E;
+    --accent-finance: #1E3A5F;
+    --accent-data: #4A1C40;
+    --accent-rob: #1A1814;
+    --tag-blocker-bg: #FDF0EE;
+    --tag-blocker: #8B2A1C;
+    --tag-decision-bg: #FEF6EC;
+    --tag-decision: #7A4A10;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .header {
+    padding: 2rem 2.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .header-left { flex: 1; }
+
+  .week-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+
+  .person-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+
+  .person-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .team-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .team-strategy { background: #E8F0ED; color: var(--accent-strategy); }
+  .team-finance { background: #E6EDF5; color: var(--accent-finance); }
+  .team-data { background: #F0E8EF; color: var(--accent-data); }
+  .team-director { background: #ECEAE6; color: var(--accent-rob); }
+
+  .body { padding: 2rem 2.5rem; max-width: 760px; margin: 0 auto; }
+
+  .prefill-banner {
+    background: var(--prefill);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 2rem;
+  }
+
+  .prefill-banner-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+  }
+
+  .prefill-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .prefill-item { flex: 1; min-width: 200px; }
+
+  .prefill-item-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-bottom: 3px;
+  }
+
+  .prefill-item-value {
+    font-size: 13px;
+    color: var(--prefill-text);
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  .section {
+    margin-bottom: 2rem;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .field { margin-bottom: 16px; }
+
+  .field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .field-hint {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-tertiary);
+  }
+
+  input[type="text"], textarea {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    transition: border-color .15s;
+    outline: none;
+    resize: none;
+  }
+
+  input[type="text"]:focus, textarea:focus {
+    border-color: var(--border-strong);
+  }
+
+  textarea { line-height: 1.6; min-height: 72px; }
+
+  .priority-inputs { display: flex; flex-direction: column; gap: 6px; }
+
+  .priority-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .priority-num {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    min-width: 16px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .submit-section {
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .submit-meta { font-size: 12px; color: var(--text-tertiary); line-height: 1.5; }
+
+  .submit-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 11px 28px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: var(--text);
+    color: #fff;
+    letter-spacing: .01em;
+    transition: opacity .15s, transform .1s;
+  }
+
+  .submit-btn:hover { opacity: .85; }
+  .submit-btn:active { transform: scale(.98); }
+  .submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .status-bar {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--text);
+    color: #fff;
+    font-size: 13px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: transform .3s ease;
+    white-space: nowrap;
+    z-index: 100;
+  }
+
+  .status-bar.show { transform: translateX(-50%) translateY(0); }
+  .status-bar.success { background: #1D5C3A; }
+  .status-bar.error { background: #8B2A1C; }
+
+  .loading-state {
+    display: none;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  .form-content { display: block; }
+
+  @media (max-width: 600px) {
+    .header { padding: 1.5rem; }
+    .body { padding: 1.5rem; }
+    .two-col { grid-template-columns: 1fr; }
+    .prefill-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading-state">Loading your previous submission...</div>
+
+<div id="form-content" class="form-content" style="display:none">
+  <div class="header">
+    <div class="header-left">
+      <div class="week-label" id="week-label">Week of 11 May 2026</div>
+      <div class="person-name" id="person-name">Loading...</div>
+      <div class="person-meta" id="person-meta"></div>
+    </div>
+    <span class="team-pill" id="team-pill"></span>
+  </div>
+
+  <div class="body">
+    <div class="prefill-banner" id="prefill-banner" style="display:none">
+      <div class="prefill-banner-label">Pre-filled from last week</div>
+      <div class="prefill-row">
+        <div class="prefill-item">
+          <div class="prefill-item-label">#1 priority (week of <span id="prefill-week-label"></span>)</div>
+          <div class="prefill-item-value" id="prefill-p1">—</div>
+        </div>
+        <div class="prefill-item">
+          <div class="prefill-item-label">Top 3 focus areas</div>
+          <div class="prefill-item-value" id="prefill-focus">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Progress on last week</div>
+      <div class="field">
+        <div class="field-label">What moved, what didn't <span class="field-hint">be specific — what actually happened?</span></div>
+        <textarea id="progress" placeholder="e.g. Shipped AM-Lite call list to Salesforce. Health score mart in progress — expected by EOW. Email pipeline still blocked on data eng."></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">This week</div>
+      <div class="field">
+        <div class="field-label">#1 outcome to deliver this week <span class="field-hint">the one thing that must happen</span></div>
+        <input type="text" id="priority1" placeholder="e.g. Ship AM-Lite dashboard v1 to Looker by Wednesday">
+      </div>
+      <div class="field">
+        <div class="field-label">Top 3 focus areas <span class="field-hint">ranked 1–3</span></div>
+        <div class="priority-inputs">
+          <div class="priority-input-row"><span class="priority-num">1</span><input type="text" id="focus1" placeholder=""></div>
+          <div class="priority-input-row"><span class="priority-num">2</span><input type="text" id="focus2" placeholder=""></div>
+          <div class="priority-input-row"><span class="priority-num">3</span><input type="text" id="focus3" placeholder=""></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Flags</div>
+      <div class="two-col">
+        <div class="field">
+          <div class="field-label">Blockers / risks</div>
+          <textarea id="blockers" placeholder="e.g. Email data pipeline — batch indicators not yet in from data eng" style="min-height:88px"></textarea>
+        </div>
+        <div class="field">
+          <div class="field-label">Decisions needed</div>
+          <textarea id="decisions" placeholder="e.g. Deployment timeline sign-off needed before Wednesday" style="min-height:88px"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="submit-section">
+      <div class="submit-meta">
+        Submits to Notion · Week of 11 May 2026<br>
+        <span id="submit-deadline">Deadline: Monday 10am CAT</span>
+      </div>
+      <button class="submit-btn" id="submit-btn" onclick="submitForm()">Submit update</button>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar" id="status-bar"></div>
+
+<script>
+const WEEKLY_PAGE_ID = '35aba43eb13581d9b8c5e17d98f3a52b';
+const WEEK_LABEL = '11 May 2026';
+const PREV_WEEK_LABEL = '4 May';
+
+const TEAM_MEMBERS = {
+  'rob': {
+    name: 'Rob van Nunen',
+    title: 'Business Strategy',
+    team: 'Director',
+    teamClass: 'team-director',
+    section: 'rob',
+    prevP1: 'Annual planning process kick-off',
+    prevFocus: 'Annual planning · Regulatory consumer strategy review · Capability assessment'
+  },
+  'julie': {
+    name: 'Julie Geelen',
+    title: 'Strategy Manager',
+    team: 'Strategy',
+    teamClass: 'team-strategy',
+    section: 'Julie Geelen',
+    prevP1: 'Round off 1 May rate reduction batch',
+    prevFocus: 'Rates for groups · Custom rates calculator · Rate reduction dashboarding'
+  },
+  'khet': {
+    name: 'Khetiwe Motlana',
+    title: 'Strategy Associate',
+    team: 'Strategy',
+    teamClass: 'team-strategy',
+    section: 'Khetiwe Motlana',
+    prevP1: 'Dyner FAQ alignment with Term Sheet',
+    prevFocus: 'Dyner financial model · Remediation batch prioritisation · Consumer strategy planning'
+  },
+  'sabah': {
+    name: 'Sabah',
+    title: 'Strategy Associate',
+    team: 'Strategy',
+    teamClass: 'team-strategy',
+    section: 'Sabah',
+    prevP1: 'Adyen follow-up session / commercials',
+    prevFocus: 'UK Adyen commercials · Morocco partnership · CNP strategy framing'
+  },
+  'pieter': {
+    name: 'Pieter',
+    title: 'Strategic Finance',
+    team: 'Strategic Finance',
+    teamClass: 'team-finance',
+    section: 'Pieter',
+    prevP1: 'Finance flash report update',
+    prevFocus: 'Finance flash · FY26 reforecast (margin, opex, cash)'
+  },
+  'dylan': {
+    name: 'Dylan Curtis',
+    title: 'Strategic Finance Analyst',
+    team: 'Strategic Finance',
+    teamClass: 'team-finance',
+    section: 'Dylan Curtis',
+    prevP1: 'FY26 reforecast support',
+    prevFocus: 'Reforecast · Detailed opex budget per guardrail'
+  },
+  'matt': {
+    name: 'Matt Stelling',
+    title: 'Strategic Finance Associate',
+    team: 'Strategic Finance',
+    teamClass: 'team-finance',
+    section: 'Matt Stelling',
+    prevP1: null,
+    prevFocus: null
+  },
+  'resh': {
+    name: 'Reshlin Moodley',
+    title: 'Data Analyst',
+    team: 'Data Analytics',
+    teamClass: 'team-data',
+    section: 'Reshlin Moodley (Resh)',
+    prevP1: 'Unblock AM-Lite call list for Salesforce',
+    prevFocus: 'AM-Lite call list · Health score model · Email data pipeline'
+  },
+  'brittany': {
+    name: 'Brittany Wingate-Pearse',
+    title: 'Senior Data Analyst',
+    team: 'Data Analytics',
+    teamClass: 'team-data',
+    section: 'Brittany Wingate-Pearse',
+    prevP1: 'Data naming conventions standardisation',
+    prevFocus: 'Naming conventions · Tracking plan foundations'
+  },
+  'euan': {
+    name: 'Euan Hope',
+    title: 'Data Scientist',
+    team: 'Data Analytics',
+    teamClass: 'team-data',
+    section: 'Euan Hope',
+    prevP1: 'Complete churn model build',
+    prevFocus: 'Model build · Feature engineering · Initial validation'
+  },
+  'lize': {
+    name: 'Lize Botes',
+    title: 'Data Analyst',
+    team: 'Data Analytics',
+    teamClass: 'team-data',
+    section: 'Lize Botes',
+    prevP1: 'Location data interest exploration',
+    prevFocus: 'Location data · Schema alignment'
+  },
+  'mikaeel': {
+    name: 'Mikaeel Mathews',
+    title: 'Senior Data Analyst',
+    team: 'Data Analytics',
+    teamClass: 'team-data',
+    section: 'Mikaeel Mathews',
+    prevP1: 'Product usage mart build',
+    prevFocus: 'Mart build · Revenue streams mart support'
+  }
+};
+
+function getPerson() {
+  const hash = window.location.hash.replace('#', '').toLowerCase().trim();
+  return TEAM_MEMBERS[hash] || null;
+}
+
+function showStatus(msg, type) {
+  const bar = document.getElementById('status-bar');
+  bar.textContent = msg;
+  bar.className = 'status-bar show ' + (type || '');
+  setTimeout(() => { bar.className = 'status-bar'; }, 4000);
+}
+
+function init() {
+  document.getElementById('loading').style.display = 'block';
+  const person = getPerson();
+
+  if (!person) {
+    document.getElementById('loading').textContent = 'No person specified. Add your name to the URL: ...#resh or ...#khet etc.';
+    return;
+  }
+
+  document.getElementById('person-name').textContent = person.name;
+  document.getElementById('person-meta').textContent = person.title;
+  document.getElementById('week-label').textContent = 'Week of ' + WEEK_LABEL;
+  const pill = document.getElementById('team-pill');
+  pill.textContent = person.team;
+  pill.className = 'team-pill ' + person.teamClass;
+
+  if (person.prevP1) {
+    document.getElementById('prefill-banner').style.display = 'block';
+    document.getElementById('prefill-week-label').textContent = PREV_WEEK_LABEL;
+    document.getElementById('prefill-p1').textContent = person.prevP1;
+    document.getElementById('prefill-focus').textContent = person.prevFocus || '—';
+  }
+
+  document.title = person.name.split(' ')[0] + ' — Weekly Update';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('form-content').style.display = 'block';
+}
+
+async function submitForm() {
+  const person = getPerson();
+  if (!person) return;
+
+  const p1 = document.getElementById('priority1').value.trim();
+  const f1 = document.getElementById('focus1').value.trim();
+  const f2 = document.getElementById('focus2').value.trim();
+  const f3 = document.getElementById('focus3').value.trim();
+  const progress = document.getElementById('progress').value.trim();
+  const blockers = document.getElementById('blockers').value.trim();
+  const decisions = document.getElementById('decisions').value.trim();
+
+  if (!p1) { showStatus('Please enter your #1 priority for this week', 'error'); return; }
+  if (!f1) { showStatus('Please enter at least your top focus area', 'error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const focusList = [f1, f2, f3].filter(Boolean).map((f, i) => `- ${f}`).join('\n');
+
+  const sectionContent = `**${person.name} — ${person.title}**
+
+**#1 this week:** ${p1}
+
+**Top 3 in focus:**
+${focusList}
+
+**Progress on last week:** ${progress || 'Not provided'}
+
+**Blockers / Risks:** ${blockers || 'None'}
+
+**Decisions needed:** ${decisions || 'None'}`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        mcp_servers: [{ type: 'url', url: 'https://mcp.notion.com/mcp', name: 'notion' }],
+        system: `You are a helpful assistant that updates a Notion page. 
+The weekly Notion page ID is: ${WEEKLY_PAGE_ID}
+When asked to update a person's section, use the notion update_page tool with command "update_content" to find the person's section and replace it with the new content provided.
+Find the section by searching for the person's name as a heading. Replace everything from their name heading down to the next "---" divider with the new content followed by "---".
+Return only "done" when complete, nothing else.`,
+        messages: [{
+          role: 'user',
+          content: `Update the section for "${person.section}" in the weekly Notion page with this content:\n\n${sectionContent}\n\nAlso update the Section 0 table row for ${person.name.split(' ')[0]} with their #1 priority: "${p1}"`
+        }]
+      })
+    });
+
+    if (response.ok) {
+      showStatus('Submitted to Notion successfully', 'success');
+      btn.textContent = 'Submitted';
+      document.querySelectorAll('input, textarea').forEach(el => el.disabled = true);
+    } else {
+      throw new Error('API error ' + response.status);
+    }
+  } catch (err) {
+    console.error(err);
+    showStatus('Could not connect to Notion — please try again', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Submit update';
+  }
+}
+
+window.addEventListener('hashchange', init);
+init();
+</script>
+</body>
+</html>
