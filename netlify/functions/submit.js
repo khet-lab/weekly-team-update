@@ -1,4 +1,4 @@
-const CANVAS_ID = 'F0B2CPE45UK';
+const CANVAS_ID = process.env.SLACK_CANVAS_ID;
 
 const PERSON_SECTIONS = {
   rob:'Rob van Nunen',julie:'Julie Geelen',khet:'Khetiwe Motlana',
