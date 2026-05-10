@@ -5,12 +5,6 @@ const PERSON_SECTIONS = {
   lize:'Lize Botes',mikaeel:'Mikaeel Mathews'
 };
 
-const TEAMS = {
-  rob:'strategy', julie:'strategy', khet:'strategy', sabah:'strategy',
-  pieter:'finance', dylan:'finance', matt:'finance',
-  resh:'data', brittany:'data', euan:'data', lize:'data', mikaeel:'data'
-};
-
 const FIRST_NAMES = {
   rob:'Rob', julie:'Julie', khet:'Khet', sabah:'Sabah',
   pieter:'Pieter', dylan:'Dylan', matt:'Matt',
@@ -29,62 +23,65 @@ exports.handler = async function(event) {
     const { person, p1 } = body;
     const personKey = person?.toLowerCase();
     const sectionName = PERSON_SECTIONS[personKey];
-    const team = TEAMS[personKey];
     const firstName = FIRST_NAMES[personKey];
 
     if (!sectionName) return {statusCode:400, headers, body:JSON.stringify({error:'Unknown person'})};
 
-    // Search for "Person — this week" heading specifically
-    const lookupRes = await fetch('https://slack.com/api/canvases.sections.lookup', {
+    // 1. Update the person's "this week" heading section
+    const headingLookup = await fetch('https://slack.com/api/canvases.sections.lookup', {
       method:'POST',
       headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
       body:JSON.stringify({canvas_id:canvasId, criteria:{contains_text:`${sectionName} — this week`}})
     });
-    const lookupData = await lookupRes.json();
-    const sectionId = lookupData.sections?.[0]?.id;
+    const headingData = await headingLookup.json();
+    const headingId = headingData.sections?.[0]?.id;
 
-    if (!sectionId) return {statusCode:500, headers, body:JSON.stringify({error:'This week section not found'})};
-
-    const newContent = `## ${sectionName} — this week\n\n**#1 this week:** ${p1}\n\n**Top 3 in focus:**\n- ${body.focus1}${body.focus2?'\n- '+body.focus2:''}${body.focus3?'\n- '+body.focus3:''}\n\n**Progress on last week:** ${body.progress || 'Not provided'}\n\n**Blockers / risks:** ${body.blockers || 'None'}\n\n**Decisions needed:** ${body.decisions || 'None'}`;
-
-    await fetch('https://slack.com/api/canvases.edit', {
-      method:'POST',
-      headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
-      body:JSON.stringify({
-        canvas_id:canvasId,
-        changes:[{operation:'replace', section_id:sectionId, document_content:{type:'markdown', markdown:newContent}}]
-      })
-    });
-
-    // Update Section 0 priority table
-    const tableLookup = await fetch('https://slack.com/api/canvases.sections.lookup', {
-      method:'POST',
-      headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
-      body:JSON.stringify({canvas_id:canvasId, criteria:{contains_text:'|Person|Strategy|'}})
-    });
-    const tableData = await tableLookup.json();
-    
-    if (tableData.sections?.[0]) {
-      const tableId = tableData.sections[0].id;
-      const tableContent = tableData.sections[0].content || '';
-      const lines = tableContent.split('\n');
-      const newLines = lines.map(line => {
-        if (line.includes(`**${firstName}**`)) {
-          if (team === 'strategy') return `|**${firstName}**|${p1}|||`;
-          if (team === 'finance')  return `|**${firstName}**||${p1}||`;
-          if (team === 'data')     return `|**${firstName}**|||${p1}|`;
-        }
-        return line;
-      });
+    if (headingId) {
+      const focus = [body.focus1, body.focus2, body.focus3].filter(Boolean).map(f => `- ${f}`).join('\n');
+      const newContent = `## ${sectionName} — this week\n\n**#1 this week:** ${p1}\n\n**Top 3 in focus:**\n${focus}\n\n**Progress on last week:** ${body.progress || 'Not provided'}\n\n**Blockers / risks:** ${body.blockers || 'None'}\n\n**Decisions needed:** ${body.decisions || 'None'}`;
 
       await fetch('https://slack.com/api/canvases.edit', {
         method:'POST',
         headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
         body:JSON.stringify({
           canvas_id:canvasId,
-          changes:[{operation:'replace', section_id:tableId, document_content:{type:'markdown', markdown:newLines.join('\n')}}]
+          changes:[{operation:'replace', section_id:headingId, document_content:{type:'markdown', markdown:newContent}}]
         })
       });
+    }
+
+    // 2. Update Section 0 — find the bullet list that has this person in it
+    const sec0Lookup = await fetch('https://slack.com/api/canvases.sections.lookup', {
+      method:'POST',
+      headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
+      body:JSON.stringify({canvas_id:canvasId, criteria:{contains_text:`**${firstName}:**`}})
+    });
+    const sec0Data = await sec0Lookup.json();
+
+    if (sec0Data.sections?.length) {
+      // Find the bullet list section (contains multiple "* **" entries — the team list)
+      const teamSection = sec0Data.sections.find(s => 
+        s.content && s.content.includes(`**${firstName}:**`) && (s.content.match(/\* \*\*/g) || []).length >= 2
+      );
+      
+      if (teamSection) {
+        const lines = teamSection.content.split('\n');
+        const newLines = lines.map(line => {
+          if (line.includes(`**${firstName}:**`)) {
+            return `* **${firstName}:** ${p1}`;
+          }
+          return line;
+        });
+
+        await fetch('https://slack.com/api/canvases.edit', {
+          method:'POST',
+          headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
+          body:JSON.stringify({
+            canvas_id:canvasId,
+            changes:[{operation:'replace', section_id:teamSection.id, document_content:{type:'markdown', markdown:newLines.join('\n')}}]
+          })
+        });
+      }
     }
 
     return {statusCode:200, headers, body:JSON.stringify({ok:true})};
